@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" role="img" aria-label="Portrait placeholder">
+  <rect width="400" height="480" fill="#f3dbc1"/>
+  <circle cx="200" cy="170" r="90" fill="#d4b896" stroke="#112909" stroke-width="6"/>
+  <path d="M70 360 Q200 280 330 360 L330 480 L70 480 Z" fill="#105b09" stroke="#112909" stroke-width="6"/>
+  <text x="200" y="430" text-anchor="middle" fill="#f3dbc1" font-family="Roboto Mono, monospace" font-size="28">KA</text>
+</svg>

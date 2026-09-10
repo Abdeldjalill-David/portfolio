@@ -1,0 +1,33 @@
+<svg viewBox="300 150 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blueL" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a6b95"/><stop offset="100%" stop-color="#2a3f5c"/>
+    </linearGradient>
+    <linearGradient id="blueR" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6b8db8"/><stop offset="100%" stop-color="#3d5a7a"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(-40,-20)">
+    <polygon points="480,360 660,450 510,525 330,435" fill="#1a2233" opacity="0.15"/>
+    <polygon points="330,415 510,505 510,325 330,235" fill="url(#blueL)"/>
+    <polygon points="660,430 510,505 510,325 660,250" fill="url(#blueR)"/>
+    <polygon points="480,160 660,250 510,325 330,235" fill="#8fa8c8"/>
+    <polygon points="490,172 640,247 505,313 355,238" fill="#5c8a4a"/>
+    <polygon points="510,190 600,235 560,255 470,210" fill="#7aab5f"/>
+    <g fill="#bfe0ff" opacity="0.9">
+      <polygon points="350,260 400,285 400,300 350,275"/><polygon points="420,295 470,320 470,335 420,310"/>
+      <polygon points="350,310 400,335 400,350 350,325"/><polygon points="420,345 470,370 470,385 420,360"/>
+      <polygon points="350,360 400,385 400,400 350,375"/><polygon points="420,395 470,420 470,435 420,410"/>
+      <polygon points="540,290 600,260 600,275 540,305"/><polygon points="540,340 600,310 600,325 540,355"/>
+      <polygon points="540,390 600,360 600,375 540,405"/><polygon points="540,440 600,410 600,425 540,455"/>
+    </g>
+    <polygon points="560,220 600,240 580,250 540,230" fill="#3a4252"/>
+    <polygon points="560,220 540,230 540,215 560,205" fill="#2a323f"/>
+    <polygon points="600,240 580,250 580,235 600,225" fill="#4a5262"/>
+    <ellipse cx="430" cy="230" rx="20" ry="10" fill="#4a8a3a"/>
+    <ellipse cx="470" cy="250" rx="16" ry="8" fill="#5a9a4a"/>
+  </g>
+</svg>

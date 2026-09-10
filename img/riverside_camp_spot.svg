@@ -1,0 +1,13 @@
+<svg viewBox="-30 -50 170 150" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(0,0)">
+    <polygon points="0,20 60,50 40,70 -20,40" fill="#3d6fa8"/>
+    <polygon points="0,20 60,50 40,-10 -20,-40" fill="#4a86c8"/>
+    <polygon points="60,50 40,-10 40,70" fill="#2a5080"/>
+    <polygon points="0,20 -20,-40 -20,40" fill="#6ba0d8"/>
+    <ellipse cx="90" cy="60" rx="14" ry="6" fill="#5a3a20"/>
+    <ellipse cx="90" cy="58" rx="8" ry="4" fill="#ff8a3a"/>
+    <ellipse cx="90" cy="55" rx="5" ry="3" fill="#ffd04a"/>
+    <ellipse cx="110" cy="70" rx="18" ry="5" fill="#8a5a37" transform="rotate(-15 110 70)"/>
+    <ellipse cx="115" cy="78" rx="18" ry="5" fill="#6e3f24" transform="rotate(10 115 78)"/>
+  </g>
+</svg>

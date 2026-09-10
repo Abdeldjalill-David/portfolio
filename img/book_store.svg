@@ -1,0 +1,27 @@
+<svg viewBox="900 220 240 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="woodL" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#a5643f"/><stop offset="100%" stop-color="#6e3f24"/>
+    </linearGradient>
+    <linearGradient id="woodR" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c97e52"/><stop offset="100%" stop-color="#8d5433"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(55,45)">
+    <ellipse cx="1010" cy="460" rx="82" ry="42" fill="#1a2233" opacity="0.18"/>
+    <path d="M 928,450 L 928,350 A 82,42 0 0 1 1092,350 L 1092,450 A 82,42 0 0 1 928,450 Z" fill="url(#woodL)"/>
+    <path d="M 928,350 A 82,42 0 0 1 1092,350 L 1092,450 A 82,42 0 0 0 928,450 Z" fill="url(#woodR)" opacity="0.85"/>
+    <ellipse cx="1010" cy="350" rx="82" ry="42" fill="#d9a877"/>
+    <path d="M 928,350 L 1010,240 L 1092,350 A 82,42 0 0 1 928,350 Z" fill="#b0563a"/>
+    <path d="M 928,350 A 82,42 0 0 0 1092,350 L 1010,240 Z" fill="#8a3d26"/>
+    <ellipse cx="1010" cy="350" rx="82" ry="42" fill="none" stroke="#7a3520" stroke-width="4"/>
+    <g fill="#ffd98a">
+      <ellipse cx="965" cy="400" rx="10" ry="14"/><ellipse cx="1010" cy="410" rx="10" ry="14"/><ellipse cx="1055" cy="400" rx="10" ry="14"/>
+    </g>
+    <rect x="985" y="440" width="50" height="14" rx="3" fill="#f5e2c0"/>
+    <text x="1010" y="451" font-family="Georgia, serif" font-size="10" fill="#5a3a20" text-anchor="middle" font-weight="bold">BOOKS</text>
+  </g>
+</svg>

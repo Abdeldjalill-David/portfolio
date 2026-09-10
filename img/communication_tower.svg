@@ -1,0 +1,24 @@
+<svg viewBox="1100 270 200 380" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(70,35)">
+    <polygon points="1150,570 1230,610 1190,630 1110,590" fill="#c8c8c0"/>
+    <polygon points="1150,590 1190,610 1190,410 1150,390" fill="#8a95a5"/>
+    <polygon points="1190,610 1230,590 1230,390 1190,410" fill="#6a7585"/>
+    <g stroke="#5a6575" stroke-width="2">
+      <line x1="1150" y1="560" x2="1230" y2="560"/><line x1="1150" y1="520" x2="1230" y2="520"/>
+      <line x1="1150" y1="480" x2="1230" y2="480"/><line x1="1150" y1="440" x2="1230" y2="440"/>
+      <line x1="1150" y1="560" x2="1230" y2="520"/><line x1="1150" y1="520" x2="1230" y2="480"/>
+      <line x1="1150" y1="480" x2="1230" y2="440"/>
+    </g>
+    <polygon points="1130,395 1190,425 1250,395 1190,365" fill="#a8b3c0"/>
+    <line x1="1190" y1="365" x2="1190" y2="290" stroke="#5a6575" stroke-width="3"/>
+    <line x1="1170" y1="380" x2="1170" y2="320" stroke="#5a6575" stroke-width="2"/>
+    <line x1="1210" y1="380" x2="1210" y2="320" stroke="#5a6575" stroke-width="2"/>
+    <circle cx="1190" cy="285" r="6" fill="#ff3a3a"/>
+    <circle cx="1190" cy="285" r="12" fill="#ff3a3a" opacity="0.25"/>
+  </g>
+</svg>

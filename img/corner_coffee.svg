@@ -1,0 +1,29 @@
+<svg viewBox="700 420 300 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pinkL" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e88fb0"/><stop offset="100%" stop-color="#a84d70"/>
+    </linearGradient>
+    <linearGradient id="pinkR" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5b8cd"/><stop offset="100%" stop-color="#c46a8a"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(15,35)">
+    <polygon points="830,535 950,595 850,645 730,585" fill="#1a2233" opacity="0.15"/>
+    <polygon points="730,565 850,625 850,545 730,485" fill="url(#pinkL)"/>
+    <polygon points="950,575 850,625 850,545 950,495" fill="url(#pinkR)"/>
+    <polygon points="830,435 950,495 850,545 730,485" fill="#f7d0de"/>
+    <polygon points="720,490 830,545 850,535 740,480" fill="#e8455c"/>
+    <polygon points="850,545 950,495 970,505 870,555" fill="#c22a42"/>
+    <polygon points="760,520 800,540 800,515 760,495" fill="#bfe0ff"/>
+    <polygon points="820,550 860,570 860,545 820,525" fill="#bfe0ff"/>
+    <g stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round">
+      <path d="M 760,620 L 800,640 M 800,640 L 840,660 M 840,660 L 880,680"/>
+      <path d="M 760,620 L 760,632 M 800,640 L 800,652 M 840,660 L 840,672 M 880,680 L 880,692"/>
+    </g>
+    <rect x="820" y="605" width="60" height="16" rx="3" fill="#ffffff"/>
+    <text x="850" y="617" font-family="Arial" font-size="10" fill="#c22a42" text-anchor="middle" font-weight="bold">CAFE</text>
+  </g>
+</svg>

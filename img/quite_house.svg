@@ -1,0 +1,33 @@
+<svg viewBox="800 90 360 320" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(25,-35)">
+    <polygon points="940,250 1080,320 970,375 830,305" fill="#1a2233" opacity="0.15"/>
+    <polygon points="830,285 970,355 970,265 830,195" fill="#e0a878"/>
+    <polygon points="1080,300 970,355 970,265 1080,210" fill="#f0c098"/>
+    <polygon points="830,195 970,265 1025,187 885,117" fill="#a05540"/>
+    <polygon points="885,117 1025,187 1000,175 870,110" fill="#7a3d2c"/>
+    <polygon points="885,117 1025,187 1020,180 882,112" fill="#c46a52"/>
+    <polygon points="1080,210 970,265 1025,187" fill="#c07050"/>
+    <polygon points="900,275 930,290 930,260 900,245" fill="#5a3a20"/>
+    <polygon points="850,225 880,240 880,220 850,205" fill="#bfe0ff" stroke="#7a5a40" stroke-width="2"/>
+    <polygon points="1000,265 1040,245 1040,225 1000,245" fill="#bfe0ff" stroke="#7a5a40" stroke-width="2"/>
+    <polygon points="1040,330 1100,360 1080,370 1020,340" fill="#6a4a2a"/>
+    <polygon points="1050,335 1090,355 1080,362 1040,342" fill="#4a8a3a"/>
+    <circle cx="1055" cy="340" r="4" fill="#ff7a59"/><circle cx="1075" cy="350" r="4" fill="#ffe08a"/><circle cx="1090" cy="358" r="4" fill="#ff7a59"/>
+    <g stroke="#ffffff" stroke-width="3" fill="none">
+      <path d="M 810,300 L 830,310 M 810,300 L 810,315"/><path d="M 830,310 L 850,320 M 850,320 L 870,330"/>
+      <path d="M 870,330 L 890,340 M 890,340 L 910,350"/><path d="M 910,350 L 930,360 M 930,360 L 950,370"/>
+      <path d="M 950,370 L 970,380"/>
+    </g>
+    <g transform="translate(1110,340)">
+      <ellipse cx="0" cy="6" rx="16" ry="8" fill="#1a2233" opacity="0.2"/>
+      <rect x="-3" y="-20" width="6" height="26" fill="#8a5a37"/>
+      <ellipse cx="0" cy="-30" rx="20" ry="15" fill="#3d8b48"/>
+      <ellipse cx="-6" cy="-34" rx="14" ry="11" fill="#52b060"/>
+    </g>
+  </g>
+</svg>

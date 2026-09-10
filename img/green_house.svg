@@ -1,0 +1,21 @@
+<svg viewBox="340 350 240 220" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(-45,25)">
+    <polygon points="440,460 540,510 470,545 370,495" fill="#1a2233" opacity="0.12"/>
+    <polygon points="370,475 470,525 470,465 370,415" fill="#a8e8d8" opacity="0.75"/>
+    <polygon points="540,490 470,525 470,465 540,440" fill="#c8f0e8" opacity="0.75"/>
+    <g stroke="#5a8a80" stroke-width="2" fill="none">
+      <path d="M 370,415 L 470,465 L 540,440"/><path d="M 370,445 L 470,495 L 540,470"/>
+      <path d="M 370,475 L 470,525 L 540,500"/><path d="M 420,440 L 420,500 M 470,465 L 470,525 M 505,452 L 505,512"/>
+    </g>
+    <polygon points="370,415 470,365 540,395 470,465" fill="#c8f0e8" opacity="0.8"/>
+    <polygon points="370,415 470,365 540,395 470,465" fill="none" stroke="#5a8a80" stroke-width="2"/>
+    <ellipse cx="410" cy="480" rx="12" ry="8" fill="#3d8b48"/>
+    <ellipse cx="450" cy="495" rx="10" ry="7" fill="#52b060"/>
+    <ellipse cx="490" cy="480" rx="11" ry="7" fill="#3d8b48"/>
+  </g>
+</svg>

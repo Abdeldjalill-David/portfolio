@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>3D City Map — Portfolio</title>
+<style>
+:root {
+--bg: #f0f4f8;
+--panel: #ffffff;
+--text: #1a2233;
+--muted: #7a8898;
+--accent: #2e8fe0;
+--shadow: 0 8px 24px rgba(26, 34, 51, 0.12);
+--radius: 16px;
+--panel-w: 340px;
+}
+
+
+[data-theme="dark"] {
+--bg: #0f1722;
+--panel: #1a2433;
+--text: #e8eef6;
+--muted: #8a98a8;
+--accent: #4aa8f0;
+--shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  transition: background 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+
+/* ============ TOP BAR ============ */
+.topbar {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+
+.search {
+  flex: 1 1 280px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  box-shadow: var(--shadow);
+  min-width: 200px;
+}
+.search svg { flex-shrink: 0; color: var(--muted); }
+.search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--text);
+  font-family: inherit;
+}
+.search input::placeholder { color: var(--muted); }
+.search .voice {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: grid; place-items: center;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.search .voice:hover { transform: scale(1.08); }
+.search .voice svg { color: #fff; }
+
+
+.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  background: var(--panel);
+  color: var(--text);
+  border: none;
+  border-radius: var(--radius);
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: transform 0.15s ease, background 0.3s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn.active { background: var(--accent); color: #fff; }
+.btn svg { width: 17px; height: 17px; }
+
+
+/* ============ MAP ============ */
+.map-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 1500px;
+  aspect-ratio: 16 / 10;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: transparent;
+}
+[data-theme="dark"] .map-wrap { background: #0a121c; }
+
+
+.map-wrap svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+.map-wrap svg:active { cursor: grabbing; }
+
+
+/* ===== Interactive buildings ===== */
+.building {
+  cursor: pointer;
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+              filter 0.32s ease;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+
+.building:hover {
+  transform: scale(1.05) translateY(-8px);
+  filter: brightness(1.18) 
+drop-shadow(0 10px 18px rgba(46, 143, 224, 0.45))
+drop-shadow(0 0 12px rgba(46, 143, 224, 0.35));
+}
+
+
+.building.highlight {
+  filter: brightness(1.25) drop-shadow(0 0 18px rgba(46, 143, 224, 0.85));
+  animation: pulse-highlight 1.4s ease-in-out infinite;
+}
+
+
+@keyframes pulse-highlight {
+  0%, 100% { filter: brightness(1.2) drop-shadow(0 0 14px rgba(46, 143, 224, 0.7)); }
+  50% { filter: brightness(1.35) drop-shadow(0 0 22px rgba(46, 143, 224, 1)); }
+}
+
+
+/* Weather & night */
+.weather {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.weather.on { opacity: 1; }
+
+
+.rain span {
+  position: absolute;
+  top: -20%;
+  width: 2px;
+  height: 18px;
+  background: linear-gradient(to bottom, transparent, rgba(140, 190, 230, 0.75));
+  border-radius: 2px;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  0%   { transform: translateY(-100vh) translateX(0); }
+  100% { transform: translateY(120vh) translateX(-60px); }
+}
+
+
+.snow span {
+  position: absolute;
+  top: -10%;
+  width: 7px;
+  height: 7px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0.85;
+  filter: blur(0.4px);
+  animation: snow-fall linear infinite;
+}
+@keyframes snow-fall {
+  0%   { transform: translateY(-100vh) translateX(0) rotate(0deg); }
+  100% { transform: translateY(120vh) translateX(40px) rotate(360deg); }
+}
+
+
+.night-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 20, 40, 0.55), rgba(5, 12, 25, 0.7));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  mix-blend-mode: multiply;
+}
+[data-theme="dark"] .night-overlay { opacity: 1; }
+[data-theme="dark"] .map-wrap svg { filter: brightness(0.88) saturate(1.12); }
+
+
+/* Animations */
+@keyframes twinkle { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes pulse   { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes drive   { 0% { transform: translate(0,0); } 100% { transform: translate(280px,140px); } }
+
+
+.tw    { animation: twinkle 2.4s ease-in-out infinite; }
+.pulse { animation: pulse 1.6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+.bus   { animation: drive 12s linear infinite; }
+
+
+/* ============ INFO PANEL ============ */
+.info-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--panel-w);
+  max-width: 100%;
+  height: 100%;
+  background: var(--panel);
+  box-shadow: -12px 0 40px rgba(0,0,0,0.18);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px;
+  overflow-y: auto;
+}
+.info-panel.open { transform: translateX(0); }
+
+
+.info-panel .close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 24px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s, color 0.2s;
+}
+.info-panel .close:hover { background: rgba(0,0,0,0.06); color: var(--text); }
+
+
+.info-panel .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.info-panel h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+.info-panel p {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.info-panel .meta {
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px solid color-mix(in srgb, var(--muted) 25%, transparent);
+  padding-top: 16px;
+}
+
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 90;
+}
+.backdrop.show { opacity: 1; pointer-events: auto; }
+
+
+@media (max-width: 640px) {
+body { padding: 12px; }
+.search { padding: 10px 14px; }
+.btn { padding: 10px 12px; font-size: 13px; }
+.btn span { display: none; }
+.info-panel { width: 100%; }
+}
+</style>
+</head>
+<body data-theme="light">
+
+
+  <div class="topbar">
+    <div class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search places… (office, cafe, books…)" />
+      <button class="voice" aria-label="Voice search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+        </svg>
+      </button>
+    </div>
+
+
+    <div class="controls">
+      <button class="btn" id="themeBtn" aria-label="Toggle theme">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+        <span>Theme</span>
+      </button>
+      <button class="btn" id="rainBtn" aria-label="Toggle rain">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 16.6A5 5 0 0 0 18 7h-1.3A8 8 0 1 0 4 15.3"/>
+          <line x1="8" y1="19" x2="8" y2="21"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="16" y1="19" x2="16" y2="21"/>
+        </svg>
+        <span>Rain</span>
+      </button>
+      <button class="btn" id="snowBtn" aria-label="Toggle snow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/>
+        </svg>
+        <span>Snow</span>
+      </button>
+    </div>
+  </div>
+
+
+  <div class="map-wrap">
+    <svg viewBox="0 0 1700 1100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Interactive isometric city map">
+      <defs>
+        <linearGradient id="roadG" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#5a6478"/><stop offset="100%" stop-color="#3a4252"/>
+        </linearGradient>
+        <linearGradient id="glassL" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#7fb8e0"/><stop offset="100%" stop-color="#3d7fb5"/>
+        </linearGradient>
+        <linearGradient id="glassR" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#a9d4ee"/><stop offset="100%" stop-color="#5aa0d0"/>
+        </linearGradient>
+        <linearGradient id="blueL" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#4a6b95"/><stop offset="100%" stop-color="#2a3f5c"/>
+        </linearGradient>
+        <linearGradient id="blueR" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#6b8db8"/><stop offset="100%" stop-color="#3d5a7a"/>
+        </linearGradient>
+        <linearGradient id="woodL" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#a5643f"/><stop offset="100%" stop-color="#6e3f24"/>
+        </linearGradient>
+        <linearGradient id="woodR" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#c97e52"/><stop offset="100%" stop-color="#8d5433"/>
+        </linearGradient>
+        <linearGradient id="pinkL" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#e88fb0"/><stop offset="100%" stop-color="#a84d70"/>
+        </linearGradient>
+        <linearGradient id="pinkR" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#f5b8cd"/><stop offset="100%" stop-color="#c46a8a"/>
+        </linearGradient>
+        <linearGradient id="grassG" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#7ec850"/><stop offset="50%" stop-color="#6bb83a"/><stop offset="100%" stop-color="#5aa82e"/>
+        </linearGradient>
+        <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+        </filter>
+      </defs>
+
+
+<!-- Full grass / soil cover (base land) -->
+      <polygon points="0,180 300,80 700,40 1100,60 1500,120 1700,220 1700,900 1500,1050 1100,1100 600,1080 200,1000 0,850" fill="url(#grassG)"/>
+      <polygon points="80,300 250,220 420,280 380,420 150,480" fill="#8fd06a" opacity="0.55"/>
+      <polygon points="1280,150 1520,200 1480,360 1220,320" fill="#7fc45a" opacity="0.5"/>
+      <polygon points="200,700 450,650 520,820 280,880" fill="#8fd06a" opacity="0.45"/>
+      <polygon points="1350,780 1600,740 1650,920 1400,980" fill="#7fc45a" opacity="0.5"/>
+      <polygon points="600,150 850,100 980,220 750,280" fill="#8fd06a" opacity="0.4"/>
+
+
+<!-- Roads -->
+      <polygon points="500,250 1180,590 1100,630 420,290" fill="url(#roadG)"/>
+      <polygon points="1100,250 1180,290 500,630 420,590" fill="url(#roadG)"/>
+      <polygon points="800,400 880,440 800,480 720,440" fill="#3a4252"/>
+      <path d="M 470,270 L 1150,610" stroke="#f0f0f0" stroke-width="4" stroke-dasharray="26 22" opacity="0.85"/>
+      <path d="M 1130,270 L 450,610" stroke="#f0f0f0" stroke-width="4" stroke-dasharray="26 22" opacity="0.85"/>
+      <g fill="#ffffff" opacity="0.9">
+        <polygon points="742,378 762,388 748,414 728,404"/>
+        <polygon points="762,388 782,398 768,424 748,414"/>
+        <polygon points="782,398 802,408 788,434 768,424"/>
+        <polygon points="802,408 822,418 808,444 788,434"/>
+      </g>
+      <g fill="#ffffff" opacity="0.9">
+        <polygon points="820,470 840,460 826,434 806,444"/>
+        <polygon points="840,460 860,450 846,424 826,434"/>
+        <polygon points="860,450 880,440 866,414 846,424"/>
+      </g>
+
+
+<!-- Park area (expanded) -->
+      <polygon points="680,550 920,660 780,760 540,650" fill="#8fd06a"/>
+      <path d="M 640,590 Q 720,640 840,650" stroke="#e8d9b0" stroke-width="9" fill="none" opacity="0.85"/>
+      <path d="M 580,650 Q 700,700 800,730" stroke="#e8d9b0" stroke-width="8" fill="none" opacity="0.8"/>
+      <path d="M 700,700 Q 780,730 860,710" stroke="#e8d9b0" stroke-width="6" fill="none" opacity="0.7"/>
+
+
+<!-- Extra grass patches & soft hills -->
+      <ellipse cx="320" cy="520" rx="90" ry="45" fill="#7fc45a" opacity="0.7"/>
+      <ellipse cx="1450" cy="680" rx="110" ry="50" fill="#8fd06a" opacity="0.65"/>
+      <ellipse cx="200" cy="380" rx="70" ry="35" fill="#8fd06a" opacity="0.6"/>
+      <ellipse cx="1550" cy="380" rx="80" ry="40" fill="#7fc45a" opacity="0.55"/>
+      <ellipse cx="1050" cy="150" rx="95" ry="40" fill="#8fd06a" opacity="0.5"/>
+      <ellipse cx="480" cy="180" rx="60" ry="28" fill="#7fc45a" opacity="0.55"/>
+      <ellipse cx="780" cy="850" rx="100" ry="45" fill="#8fd06a" opacity="0.6"/>
+      <ellipse cx="160" cy="780" rx="75" ry="38" fill="#7fc45a" opacity="0.55"/>
+
+
+<!-- ===== BUILDING 1: BLUE OFFICE ===== -->
+      <g class="building" data-id="office" data-name="Blue Office Tower" data-type="Workplace" data-desc="Modern co-working space where most of my frontend and product design work happens. Large open floors, good light, and a killer view of the park." filter="url(#soft)" transform="translate(-40,-20)">
+        <polygon points="480,360 660,450 510,525 330,435" fill="#1a2233" opacity="0.15"/>
+        <polygon points="330,415 510,505 510,325 330,235" fill="url(#blueL)"/>
+        <polygon points="660,430 510,505 510,325 660,250" fill="url(#blueR)"/>
+        <polygon points="480,160 660,250 510,325 330,235" fill="#8fa8c8"/>
+        <polygon points="490,172 640,247 505,313 355,238" fill="#5c8a4a"/>
+        <polygon points="510,190 600,235 560,255 470,210" fill="#7aab5f"/>
+        <g fill="#bfe0ff" opacity="0.9">
+          <polygon points="350,260 400,285 400,300 350,275"/><polygon points="420,295 470,320 470,335 420,310"/>
+          <polygon points="350,310 400,335 400,350 350,325"/><polygon points="420,345 470,370 470,385 420,360"/>
+          <polygon points="350,360 400,385 400,400 350,375"/><polygon points="420,395 470,420 470,435 420,410"/>
+          <polygon points="540,290 600,260 600,275 540,305"/><polygon points="540,340 600,310 600,325 540,355"/>
+          <polygon points="540,390 600,360 600,375 540,405"/><polygon points="540,440 600,410 600,425 540,455"/>
+        </g>
+        <polygon points="560,220 600,240 580,250 540,230" fill="#3a4252"/>
+        <polygon points="560,220 540,230 540,215 560,205" fill="#2a323f"/>
+        <polygon points="600,240 580,250 580,235 600,225" fill="#4a5262"/>
+        <ellipse cx="430" cy="230" rx="20" ry="10" fill="#4a8a3a"/>
+        <ellipse cx="470" cy="250" rx="16" ry="8" fill="#5a9a4a"/>
+      </g>
+
+
+<!-- ===== BUILDING 2: HOUSE ===== -->
+      <g class="building" data-id="house" data-name="Quiet House" data-type="Home" data-desc="My home base. A peaceful spot with a small garden and a workshop in the back. Where the late-night coding sessions and weekend side projects happen." filter="url(#soft)" transform="translate(25,-35)">
+        <polygon points="940,250 1080,320 970,375 830,305" fill="#1a2233" opacity="0.15"/>
+        <polygon points="830,285 970,355 970,265 830,195" fill="#e0a878"/>
+        <polygon points="1080,300 970,355 970,265 1080,210" fill="#f0c098"/>
+        <polygon points="830,195 970,265 1025,187 885,117" fill="#a05540"/>
+        <polygon points="885,117 1025,187 1000,175 870,110" fill="#7a3d2c"/>
+        <polygon points="885,117 1025,187 1020,180 882,112" fill="#c46a52"/>
+        <polygon points="1080,210 970,265 1025,187" fill="#c07050"/>
+        <polygon points="900,275 930,290 930,260 900,245" fill="#5a3a20"/>
+        <polygon points="850,225 880,240 880,220 850,205" fill="#bfe0ff" stroke="#7a5a40" stroke-width="2"/>
+        <polygon points="1000,265 1040,245 1040,225 1000,245" fill="#bfe0ff" stroke="#7a5a40" stroke-width="2"/>
+        <polygon points="1040,330 1100,360 1080,370 1020,340" fill="#6a4a2a"/>
+        <polygon points="1050,335 1090,355 1080,362 1040,342" fill="#4a8a3a"/>
+        <circle cx="1055" cy="340" r="4" fill="#ff7a59"/><circle cx="1075" cy="350" r="4" fill="#ffe08a"/><circle cx="1090" cy="358" r="4" fill="#ff7a59"/>
+        <g stroke="#ffffff" stroke-width="3" fill="none">
+          <path d="M 810,300 L 830,310 M 810,300 L 810,315"/><path d="M 830,310 L 850,320 M 850,320 L 870,330"/>
+          <path d="M 870,330 L 890,340 M 890,340 L 910,350"/><path d="M 910,350 L 930,360 M 930,360 L 950,370"/>
+          <path d="M 950,370 L 970,380"/>
+        </g>
+        <g transform="translate(1110,340)">
+          <ellipse cx="0" cy="6" rx="16" ry="8" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-20" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-30" rx="20" ry="15" fill="#3d8b48"/>
+          <ellipse cx="-6" cy="-34" rx="14" ry="11" fill="#52b060"/>
+        </g>
+      </g>
+
+
+<!-- ===== BUILDING 3: POST OFFICE ===== -->
+      <g class="building" data-id="post" data-name="City Post Office" data-type="Service" data-desc="Where packages of prototypes, printed mockups, and the occasional handwritten note arrive. Also a good landmark for meeting clients." filter="url(#soft)" transform="translate(15,-25)">
+        <polygon points="750,325 870,385 780,430 660,370" fill="#1a2233" opacity="0.15"/>
+        <polygon points="660,350 780,410 780,340 660,280" fill="#3d8fb0"/>
+        <polygon points="870,365 780,410 780,340 870,295" fill="#5fb3d4"/>
+        <polygon points="750,235 870,295 780,340 660,280" fill="#8fd4ea"/>
+        <polygon points="740,245 860,305 785,342 665,282" fill="#bfe0f0"/>
+        <polygon points="680,290 740,320 740,310 680,280" fill="#ffffff"/>
+        <polygon points="690,300 720,315 720,300 690,285" fill="#bfe0ff"/>
+        <polygon points="810,370 840,355 840,340 810,355" fill="#bfe0ff"/>
+        <ellipse cx="800" cy="310" rx="16" ry="8" fill="#e0e8f0" transform="rotate(-20 800 310)"/>
+        <line x1="800" y1="316" x2="800" y2="335" stroke="#7a8898" stroke-width="3"/>
+      </g>
+
+
+<!-- ===== BUILDING 4: GLASS TOWER ===== -->
+      <g class="building" data-id="glass" data-name="Glass Tower HQ" data-type="Workplace" data-desc="The tallest building in the district. Home to the main product team and the design system that powers most of my recent work." filter="url(#soft)" transform="translate(60,-25)">
+        <polygon points="1160,380 1310,455 1190,515 1040,440" fill="#1a2233" opacity="0.18"/>
+        <polygon points="1040,420 1190,495 1190,365 1040,290" fill="url(#glassL)"/>
+        <polygon points="1310,435 1190,495 1190,365 1310,305" fill="url(#glassR)"/>
+        <polygon points="1160,230 1310,305 1190,365 1040,290" fill="#cfeaf8"/>
+        <g stroke="#ffffff" stroke-width="1.5" opacity="0.65" fill="none">
+          <path d="M 1078,304 L 1190,360 M 1116,323 L 1190,360 M 1154,342 L 1190,360"/>
+          <path d="M 1078,304 L 1078,434 M 1116,323 L 1116,453 M 1154,342 L 1154,472"/>
+        </g>
+        <g stroke="#ffffff" stroke-width="1.5" opacity="0.55" fill="none">
+          <path d="M 1228,384 L 1310,343 M 1266,403 L 1310,381"/>
+          <path d="M 1228,384 L 1228,514 M 1266,403 L 1266,533"/>
+        </g>
+        <polygon points="1080,255 1140,285 1120,295 1060,265" fill="#2a3a52"/>
+        <polygon points="1150,270 1200,295 1180,305 1130,280" fill="#1e2a3d"/>
+        <polygon points="1220,290 1260,310 1240,320 1200,300" fill="#3a4a62"/>
+        <polygon points="1100,440 1150,465 1150,415 1100,390" fill="#2a3a52"/>
+        <polygon points="1108,435 1142,452 1142,420 1108,403" fill="#6fc0e8"/>
+      </g>
+
+
+<!-- ===== BUILDING 5: BOOKSTORE ===== -->
+      <g class="building" data-id="books" data-name="Independent Bookstore" data-type="Culture" data-desc="A favorite weekend spot. Great selection of design books, architecture monographs, and quiet reading nooks. Many project ideas started here." filter="url(#soft)" transform="translate(55,45)">
+        <ellipse cx="1010" cy="460" rx="82" ry="42" fill="#1a2233" opacity="0.18"/>
+        <path d="M 928,450 L 928,350 A 82,42 0 0 1 1092,350 L 1092,450 A 82,42 0 0 1 928,450 Z" fill="url(#woodL)"/>
+        <path d="M 928,350 A 82,42 0 0 1 1092,350 L 1092,450 A 82,42 0 0 0 928,450 Z" fill="url(#woodR)" opacity="0.85"/>
+        <ellipse cx="1010" cy="350" rx="82" ry="42" fill="#d9a877"/>
+        <path d="M 928,350 L 1010,240 L 1092,350 A 82,42 0 0 1 928,350 Z" fill="#b0563a"/>
+        <path d="M 928,350 A 82,42 0 0 0 1092,350 L 1010,240 Z" fill="#8a3d26"/>
+        <ellipse cx="1010" cy="350" rx="82" ry="42" fill="none" stroke="#7a3520" stroke-width="4"/>
+        <g fill="#ffd98a">
+          <ellipse cx="965" cy="400" rx="10" ry="14"/><ellipse cx="1010" cy="410" rx="10" ry="14"/><ellipse cx="1055" cy="400" rx="10" ry="14"/>
+        </g>
+        <rect x="985" y="440" width="50" height="14" rx="3" fill="#f5e2c0"/>
+        <text x="1010" y="451" font-family="Georgia, serif" font-size="10" fill="#5a3a20" text-anchor="middle" font-weight="bold">BOOKS</text>
+      </g>
+
+
+<!-- ===== BUILDING 6: CAFE ===== -->
+      <g class="building" data-id="cafe" data-name="Corner Café" data-type="Hangout" data-desc="The go-to spot for client calls, sketching sessions, and the best flat white in the neighborhood. Outdoor seating when the weather is good." filter="url(#soft)" transform="translate(15,35)">
+        <polygon points="830,535 950,595 850,645 730,585" fill="#1a2233" opacity="0.15"/>
+        <polygon points="730,565 850,625 850,545 730,485" fill="url(#pinkL)"/>
+        <polygon points="950,575 850,625 850,545 950,495" fill="url(#pinkR)"/>
+        <polygon points="830,435 950,495 850,545 730,485" fill="#f7d0de"/>
+        <polygon points="720,490 830,545 850,535 740,480" fill="#e8455c"/>
+        <polygon points="850,545 950,495 970,505 870,555" fill="#c22a42"/>
+        <polygon points="760,520 800,540 800,515 760,495" fill="#bfe0ff"/>
+        <polygon points="820,550 860,570 860,545 820,525" fill="#bfe0ff"/>
+        <g stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M 760,620 L 800,640 M 800,640 L 840,660 M 840,660 L 880,680"/>
+          <path d="M 760,620 L 760,632 M 800,640 L 800,652 M 840,660 L 840,672 M 880,680 L 880,692"/>
+        </g>
+        <rect x="820" y="605" width="60" height="16" rx="3" fill="#ffffff"/>
+        <text x="850" y="617" font-family="Arial" font-size="10" fill="#c22a42" text-anchor="middle" font-weight="bold">CAFE</text>
+      </g>
+
+
+<!-- ===== BUILDING 7: GREENHOUSE ===== -->
+      <g class="building" data-id="greenhouse" data-name="Community Greenhouse" data-type="Nature" data-desc="A small glasshouse run by neighbors. I help with the weekend plant swaps and occasionally sketch here when I need a change of scenery." filter="url(#soft)" transform="translate(-45,25)">
+        <polygon points="440,460 540,510 470,545 370,495" fill="#1a2233" opacity="0.12"/>
+        <polygon points="370,475 470,525 470,465 370,415" fill="#a8e8d8" opacity="0.75"/>
+        <polygon points="540,490 470,525 470,465 540,440" fill="#c8f0e8" opacity="0.75"/>
+        <g stroke="#5a8a80" stroke-width="2" fill="none">
+          <path d="M 370,415 L 470,465 L 540,440"/><path d="M 370,445 L 470,495 L 540,470"/>
+          <path d="M 370,475 L 470,525 L 540,500"/><path d="M 420,440 L 420,500 M 470,465 L 470,525 M 505,452 L 505,512"/>
+        </g>
+        <polygon points="370,415 470,365 540,395 470,465" fill="#c8f0e8" opacity="0.8"/>
+        <polygon points="370,415 470,365 540,395 470,465" fill="none" stroke="#5a8a80" stroke-width="2"/>
+        <ellipse cx="410" cy="480" rx="12" ry="8" fill="#3d8b48"/>
+        <ellipse cx="450" cy="495" rx="10" ry="7" fill="#52b060"/>
+        <ellipse cx="490" cy="480" rx="11" ry="7" fill="#3d8b48"/>
+      </g>
+
+
+<!-- ===== COFFEE KIOSK ===== -->
+      <g class="building" data-id="coffee" data-name="Street Coffee Kiosk" data-type="Hangout" data-desc="Quick espresso stop on the way to the office. The barista knows the usual order." filter="url(#soft)" transform="translate(30,110)">
+        <polygon points="580,510 670,555 600,590 510,545" fill="#1a2233" opacity="0.14"/>
+        <polygon points="510,525 600,570 600,510 510,465" fill="#5a3f2c"/>
+        <polygon points="670,535 600,570 600,510 670,485" fill="#7a5538"/>
+        <polygon points="580,430 670,475 600,510 510,465" fill="#8a6a45"/>
+        <polygon points="500,470 600,520 620,510 520,460" fill="#c94a3a"/>
+        <rect x="540" y="495" width="50" height="14" rx="2" fill="#f5e2c0"/>
+        <text x="565" y="506" font-family="Georgia, serif" font-size="9" fill="#5a3a20" text-anchor="middle">COFFEE</text>
+        <ellipse cx="565" cy="525" rx="6" ry="3" fill="#ffffff"/>
+        <rect x="559" y="517" width="12" height="8" rx="2" fill="#ffffff"/>
+      </g>
+
+
+<!-- ===== ANTENNA TOWER ===== -->
+      <g class="building" data-id="tower" data-name="Communication Tower" data-type="Infrastructure" data-desc="Keeps the whole district connected. The red light on top is a reliable night-time landmark." filter="url(#soft)" transform="translate(70,35)">
+        <polygon points="1150,570 1230,610 1190,630 1110,590" fill="#c8c8c0"/>
+        <polygon points="1150,590 1190,610 1190,410 1150,390" fill="#8a95a5"/>
+        <polygon points="1190,610 1230,590 1230,390 1190,410" fill="#6a7585"/>
+        <g stroke="#5a6575" stroke-width="2">
+          <line x1="1150" y1="560" x2="1230" y2="560"/><line x1="1150" y1="520" x2="1230" y2="520"/>
+          <line x1="1150" y1="480" x2="1230" y2="480"/><line x1="1150" y1="440" x2="1230" y2="440"/>
+          <line x1="1150" y1="560" x2="1230" y2="520"/><line x1="1150" y1="520" x2="1230" y2="480"/>
+          <line x1="1150" y1="480" x2="1230" y2="440"/>
+        </g>
+        <polygon points="1130,395 1190,425 1250,395 1190,365" fill="#a8b3c0"/>
+        <line x1="1190" y1="365" x2="1190" y2="290" stroke="#5a6575" stroke-width="3"/>
+        <line x1="1170" y1="380" x2="1170" y2="320" stroke="#5a6575" stroke-width="2"/>
+        <line x1="1210" y1="380" x2="1210" y2="320" stroke="#5a6575" stroke-width="2"/>
+        <circle cx="1190" cy="285" r="6" fill="#ff3a3a" class="tw"/>
+        <circle cx="1190" cy="285" r="12" fill="#ff3a3a" opacity="0.25" class="tw"/>
+      </g>
+
+
+<!-- ===== CAMPING ===== -->
+      <g class="building" data-id="camp" data-name="Riverside Camp Spot" data-type="Nature" data-desc="Weekend escape just outside the main district. Good for clearing the head and testing outdoor product ideas." transform="translate(1050,600)">
+        <polygon points="0,20 60,50 40,70 -20,40" fill="#3d6fa8"/>
+        <polygon points="0,20 60,50 40,-10 -20,-40" fill="#4a86c8"/>
+        <polygon points="60,50 40,-10 40,70" fill="#2a5080"/>
+        <polygon points="0,20 -20,-40 -20,40" fill="#6ba0d8"/>
+        <ellipse cx="90" cy="60" rx="14" ry="6" fill="#5a3a20"/>
+        <ellipse cx="90" cy="58" rx="8" ry="4" fill="#ff8a3a"/>
+        <ellipse cx="90" cy="55" rx="5" ry="3" fill="#ffd04a"/>
+        <ellipse cx="110" cy="70" rx="18" ry="5" fill="#8a5a37" transform="rotate(-15 110 70)"/>
+        <ellipse cx="115" cy="78" rx="18" ry="5" fill="#6e3f24" transform="rotate(10 115 78)"/>
+      </g>
+
+
+<!-- Dense trees everywhere -->
+      <g>
+        <!-- Original trees -->
+        <g transform="translate(720,600)">
+          <ellipse cx="0" cy="8" rx="18" ry="9" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-22" width="6" height="30" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-32" rx="24" ry="17" fill="#3d8b48"/>
+          <ellipse cx="-6" cy="-36" rx="16" ry="12" fill="#52b060"/>
+          <ellipse cx="8" cy="-28" rx="14" ry="10" fill="#74c69d"/>
+        </g>
+        <g transform="translate(900,700)">
+          <ellipse cx="0" cy="8" rx="16" ry="8" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-20" width="6" height="28" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-30" rx="22" ry="16" fill="#3d8b48"/>
+          <ellipse cx="-5" cy="-34" rx="15" ry="11" fill="#52b060"/>
+        </g>
+        <g transform="translate(1330,470)">
+          <ellipse cx="0" cy="8" rx="18" ry="9" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-22" width="6" height="30" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-32" rx="24" ry="17" fill="#2f7a3a"/>
+          <ellipse cx="-6" cy="-36" rx="16" ry="12" fill="#4aa050"/>
+        </g>
+        <g transform="translate(620,300)">
+          <ellipse cx="0" cy="8" rx="16" ry="8" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-20" width="6" height="28" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-30" rx="22" ry="15" fill="#3d8b48"/>
+          <ellipse cx="6" cy="-34" rx="14" ry="10" fill="#52b060"/>
+        </g>
+        <g transform="translate(1420,560)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="20" ry="14" fill="#3d8b48"/>
+        </g>
+
+        <!-- More trees - park & lower area -->
+        <g transform="translate(450,580)">
+          <ellipse cx="0" cy="8" rx="17" ry="8" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-20" width="6" height="28" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-30" rx="22" ry="15" fill="#3d8b48"/>
+          <ellipse cx="-5" cy="-34" rx="14" ry="11" fill="#52b060"/>
+          <ellipse cx="7" cy="-27" rx="12" ry="9" fill="#74c69d"/>
+        </g>
+        <g transform="translate(820,720)">
+          <ellipse cx="0" cy="8" rx="15" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="20" ry="14" fill="#2f7a3a"/>
+          <ellipse cx="-4" cy="-32" rx="13" ry="10" fill="#4aa050"/>
+        </g>
+        <g transform="translate(1180,720)">
+          <ellipse cx="0" cy="8" rx="16" ry="8" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-20" width="6" height="28" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-30" rx="22" ry="15" fill="#3d8b48"/>
+          <ellipse cx="5" cy="-34" rx="14" ry="11" fill="#52b060"/>
+        </g>
+        <g transform="translate(780,780)">
+          <ellipse cx="0" cy="7" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-17" width="5" height="24" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-26" rx="18" ry="13" fill="#3d8b48"/>
+          <ellipse cx="-5" cy="-29" rx="12" ry="9" fill="#52b060"/>
+        </g>
+        <g transform="translate(650,720)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#2f7a3a"/>
+        </g>
+        <g transform="translate(980,780)">
+          <ellipse cx="0" cy="8" rx="15" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-19" width="6" height="27" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-29" rx="21" ry="14" fill="#3d8b48"/>
+          <ellipse cx="6" cy="-32" rx="13" ry="10" fill="#74c69d"/>
+        </g>
+
+        <!-- Left side trees -->
+        <g transform="translate(350,320)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="19" ry="13" fill="#3d8b48"/>
+          <ellipse cx="-5" cy="-31" rx="12" ry="9" fill="#52b060"/>
+        </g>
+        <g transform="translate(280,480)">
+          <ellipse cx="0" cy="8" rx="15" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="20" ry="13" fill="#3d8b48"/>
+          <ellipse cx="-6" cy="-31" rx="12" ry="9" fill="#74c69d"/>
+        </g>
+        <g transform="translate(180,420)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#2f7a3a"/>
+          <ellipse cx="4" cy="-28" rx="11" ry="8" fill="#4aa050"/>
+        </g>
+        <g transform="translate(120,560)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="19" ry="13" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(220,700)">
+          <ellipse cx="0" cy="7" rx="15" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-17" width="6" height="25" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-27" rx="20" ry="14" fill="#2f7a3a"/>
+          <ellipse cx="-5" cy="-30" rx="12" ry="9" fill="#52b060"/>
+        </g>
+        <g transform="translate(80,680)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="16" ry="11" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(400,780)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="19" ry="13" fill="#3d8b48"/>
+          <ellipse cx="5" cy="-31" rx="12" ry="9" fill="#74c69d"/>
+        </g>
+        <g transform="translate(150,850)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#2f7a3a"/>
+        </g>
+
+        <!-- Right side trees -->
+        <g transform="translate(1500,500)">
+          <ellipse cx="0" cy="8" rx="15" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-19" width="6" height="27" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-29" rx="21" ry="14" fill="#2f7a3a"/>
+          <ellipse cx="-4" cy="-33" rx="13" ry="10" fill="#4aa050"/>
+        </g>
+        <g transform="translate(1380,640)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-17" width="6" height="25" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-27" rx="19" ry="13" fill="#2f7a3a"/>
+          <ellipse cx="4" cy="-30" rx="12" ry="9" fill="#4aa050"/>
+        </g>
+        <g transform="translate(1550,620)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#3d8b48"/>
+          <ellipse cx="-4" cy="-28" rx="11" ry="8" fill="#52b060"/>
+        </g>
+        <g transform="translate(1480,780)">
+          <ellipse cx="0" cy="8" rx="15" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="20" ry="14" fill="#3d8b48"/>
+          <ellipse cx="6" cy="-31" rx="13" ry="9" fill="#74c69d"/>
+        </g>
+        <g transform="translate(1600,720)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="16" ry="11" fill="#2f7a3a"/>
+        </g>
+        <g transform="translate(1280,820)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="19" ry="13" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(1420,880)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#2f7a3a"/>
+          <ellipse cx="4" cy="-28" rx="11" ry="8" fill="#4aa050"/>
+        </g>
+
+        <!-- Top / mid trees -->
+        <g transform="translate(1080,160)">
+          <ellipse cx="0" cy="8" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="24" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-26" rx="18" ry="12" fill="#3d8b48"/>
+          <ellipse cx="5" cy="-29" rx="11" ry="8" fill="#52b060"/>
+        </g>
+        <g transform="translate(480,160)">
+          <ellipse cx="0" cy="7" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-17" width="6" height="25" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-27" rx="19" ry="13" fill="#2f7a3a"/>
+          <ellipse cx="-5" cy="-30" rx="12" ry="9" fill="#52b060"/>
+        </g>
+        <g transform="translate(950,120)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="16" ry="11" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(700,120)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#2f7a3a"/>
+          <ellipse cx="4" cy="-28" rx="11" ry="8" fill="#4aa050"/>
+        </g>
+        <g transform="translate(1250,220)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="19" ry="13" fill="#3d8b48"/>
+          <ellipse cx="-5" cy="-31" rx="12" ry="9" fill="#74c69d"/>
+        </g>
+        <g transform="translate(300,220)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(1550,280)">
+          <ellipse cx="0" cy="8" rx="14" ry="7" fill="#1a2233" opacity="0.2"/>
+          <rect x="-3" y="-18" width="6" height="26" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-28" rx="19" ry="13" fill="#2f7a3a"/>
+          <ellipse cx="5" cy="-31" rx="12" ry="9" fill="#4aa050"/>
+        </g>
+        <g transform="translate(100,300)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="16" ry="11" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(1620,450)">
+          <ellipse cx="0" cy="7" rx="13" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-16" width="5" height="23" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-25" rx="17" ry="12" fill="#2f7a3a"/>
+        </g>
+        <g transform="translate(50,450)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="15" ry="11" fill="#3d8b48"/>
+        </g>
+
+        <!-- Scattered mid / around buildings -->
+        <g transform="translate(540,480)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="16" ry="11" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(980,520)">
+          <ellipse cx="0" cy="7" rx="11" ry="5" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2" y="-14" width="4" height="20" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-22" rx="14" ry="10" fill="#2f7a3a"/>
+        </g>
+        <g transform="translate(1120,380)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="15" ry="11" fill="#3d8b48"/>
+        </g>
+        <g transform="translate(420,420)">
+          <ellipse cx="0" cy="6" rx="11" ry="5" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2" y="-13" width="4" height="19" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-21" rx="14" ry="10" fill="#2f7a3a"/>
+        </g>
+        <g transform="translate(860,280)">
+          <ellipse cx="0" cy="7" rx="12" ry="6" fill="#1a2233" opacity="0.2"/>
+          <rect x="-2.5" y="-15" width="5" height="22" fill="#8a5a37"/>
+          <ellipse cx="0" cy="-24" rx="16" ry="11" fill="#3d8b48"/>
+          <ellipse cx="-4" cy="-27" rx="10" ry="7" fill="#52b060"/>
+        </g>
+      </g>
+
+
+<!-- Small bushes & flower accents -->
+      <g>
+        <ellipse cx="760" cy="640" rx="18" ry="9" fill="#4aa050" opacity="0.85"/>
+        <ellipse cx="770" cy="635" rx="12" ry="7" fill="#5ec060"/>
+        <ellipse cx="680" cy="680" rx="16" ry="8" fill="#3d8b48"/>
+        <ellipse cx="860" cy="700" rx="14" ry="7" fill="#52b060"/>
+        <ellipse cx="500" cy="620" rx="15" ry="8" fill="#4aa050"/>
+        <ellipse cx="320" cy="560" rx="13" ry="7" fill="#3d8b48"/>
+        <ellipse cx="1480" cy="720" rx="16" ry="8" fill="#52b060"/>
+        <ellipse cx="1320" cy="760" rx="14" ry="7" fill="#4aa050"/>
+        <ellipse cx="200" cy="500" rx="12" ry="6" fill="#3d8b48"/>
+        <ellipse cx="1600" cy="550" rx="13" ry="7" fill="#52b060"/>
+        <!-- tiny flowers -->
+        <circle cx="740" cy="660" r="3" fill="#ff7a9a"/><circle cx="755" cy="655" r="2.5" fill="#ffe08a"/>
+        <circle cx="690" cy="700" r="2.5" fill="#ff7a9a"/><circle cx="870" cy="690" r="3" fill="#ffe08a"/>
+        <circle cx="510" cy="630" r="2.5" fill="#ff9a7a"/>
+        <circle cx="330" cy="550" r="2" fill="#ffe08a"/>
+        <circle cx="1490" cy="710" r="2.5" fill="#ff7a9a"/>
+      </g>
+
+
+<!-- Streetlights -->
+      <g>
+        <g transform="translate(700,370)">
+          <line x1="0" y1="0" x2="0" y2="-40" stroke="#8a95a5" stroke-width="3"/>
+          <ellipse cx="0" cy="-44" rx="9" ry="5" fill="#ffd94a" class="tw"/>
+          <circle cx="0" cy="-44" r="4" fill="#fff6c0"/>
+        </g>
+        <g transform="translate(940,540)">
+          <line x1="0" y1="0" x2="0" y2="-40" stroke="#8a95a5" stroke-width="3"/>
+          <ellipse cx="0" cy="-44" rx="9" ry="5" fill="#ffd94a" class="tw"/>
+          <circle cx="0" cy="-44" r="4" fill="#fff6c0"/>
+        </g>
+        <g transform="translate(560,430)">
+          <line x1="0" y1="0" x2="0" y2="-40" stroke="#8a95a5" stroke-width="3"/>
+          <ellipse cx="0" cy="-44" rx="9" ry="5" fill="#ffd94a" class="tw"/>
+          <circle cx="0" cy="-44" r="4" fill="#fff6c0"/>
+        </g>
+        <g transform="translate(1080,660)">
+          <line x1="0" y1="0" x2="0" y2="-40" stroke="#8a95a5" stroke-width="3"/>
+          <ellipse cx="0" cy="-44" rx="9" ry="5" fill="#ffd94a" class="tw"/>
+          <circle cx="0" cy="-44" r="4" fill="#fff6c0"/>
+        </g>
+      </g>
+
+
+<!-- Traffic lights -->
+      <g transform="translate(880,430)">
+        <line x1="0" y1="0" x2="0" y2="-55" stroke="#2a323f" stroke-width="3"/>
+        <rect x="-8" y="-80" width="16" height="30" rx="3" fill="#2a323f"/>
+        <circle cx="0" cy="-72" r="4" fill="#ff3a3a"/>
+        <circle cx="0" cy="-64" r="4" fill="#5a5a3a"/>
+        <circle cx="0" cy="-56" r="4" fill="#3a5a3a"/>
+      </g>
+      <g transform="translate(730,450)">
+        <line x1="0" y1="0" x2="0" y2="-55" stroke="#2a323f" stroke-width="3"/>
+        <rect x="-8" y="-80" width="16" height="30" rx="3" fill="#2a323f"/>
+        <circle cx="0" cy="-72" r="4" fill="#5a3a3a"/>
+        <circle cx="0" cy="-64" r="4" fill="#5a5a3a"/>
+        <circle cx="0" cy="-56" r="4" fill="#3aff5a"/>
+      </g>
+
+
+<!-- Benches -->
+      <g transform="translate(830,660)">
+        <rect x="-20" y="-4" width="40" height="4" fill="#8a5a37"/>
+        <rect x="-20" y="-10" width="40" height="4" fill="#a56a45"/>
+        <rect x="-16" y="0" width="3" height="8" fill="#5a3a20"/>
+        <rect x="13" y="0" width="3" height="8" fill="#5a3a20"/>
+      </g>
+      <g transform="translate(640,640)">
+        <rect x="-18" y="-4" width="36" height="4" fill="#8a5a37"/>
+        <rect x="-18" y="-10" width="36" height="4" fill="#a56a45"/>
+        <rect x="-14" y="0" width="3" height="8" fill="#5a3a20"/>
+        <rect x="11" y="0" width="3" height="8" fill="#5a3a20"/>
+      </g>
+
+
+<!-- Bus -->
+      <g class="bus">
+        <g transform="translate(660,370)">
+          <polygon points="0,0 90,45 45,67 -45,22" fill="#1a2233" opacity="0.25"/>
+          <polygon points="0,0 90,45 90,-10 0,-55" fill="#d63a3a"/>
+          <polygon points="90,45 45,67 45,12 90,-10" fill="#a82a2a"/>
+          <polygon points="0,-55 90,-10 45,12 -45,-33" fill="#e85a5a"/>
+          <polygon points="10,-48 80,-13 80,-5 10,-40" fill="#bfe0ff"/>
+          <polygon points="80,-13 45,5 45,12 80,-5" fill="#bfe0ff" opacity="0.8"/>
+          <polygon points="30,-30 45,-22 45,-2 30,-10" fill="#7a2020"/>
+          <ellipse cx="15" cy="2" rx="9" ry="5" fill="#1a1a1a"/>
+          <ellipse cx="70" cy="30" rx="9" ry="5" fill="#1a1a1a"/>
+        </g>
+      </g>
+
+
+<!-- Cars -->
+      <g>
+        <g transform="translate(940,560)">
+          <polygon points="0,0 40,20 20,30 -20,10" fill="#1a2233" opacity="0.2"/>
+          <polygon points="0,0 40,20 40,-5 0,-25" fill="#3a8fd6"/>
+          <polygon points="40,20 20,30 20,5 40,-5" fill="#2a6fa6"/>
+          <polygon points="0,-25 40,-5 20,5 -20,-15" fill="#5fb3e8"/>
+          <polygon points="5,-20 35,-5 35,0 5,-15" fill="#bfe0ff"/>
+          <ellipse cx="8" cy="2" rx="5" ry="3" fill="#1a1a1a"/>
+          <ellipse cx="30" cy="13" rx="5" ry="3" fill="#1a1a1a"/>
+        </g>
+        <g transform="translate(520,320)">
+          <polygon points="0,0 40,20 20,30 -20,10" fill="#1a2233" opacity="0.2"/>
+          <polygon points="0,0 40,20 40,-5 0,-25" fill="#f0a03a"/>
+          <polygon points="40,20 20,30 20,5 40,-5" fill="#c07a20"/>
+          <polygon points="0,-25 40,-5 20,5 -20,-15" fill="#ffc86a"/>
+          <polygon points="5,-20 35,-5 35,0 5,-15" fill="#bfe0ff"/>
+          <ellipse cx="8" cy="2" rx="5" ry="3" fill="#1a1a1a"/>
+          <ellipse cx="30" cy="13" rx="5" ry="3" fill="#1a1a1a"/>
+        </g>
+      </g>
+
+
+<!-- Twinkles -->
+      <g fill="#fff6c0">
+        <circle cx="430" cy="200" r="2.5" class="tw"/>
+        <circle cx="1120" cy="180" r="2.5" class="tw" style="animation-delay:-0.5s"/>
+        <circle cx="1350" cy="380" r="2" class="tw" style="animation-delay:-1s"/>
+        <circle cx="600" cy="480" r="2" class="tw" style="animation-delay:-1.5s"/>
+        <circle cx="900" cy="240" r="2" class="tw" style="animation-delay:-0.8s"/>
+        <circle cx="1280" cy="620" r="2" class="tw" style="animation-delay:-1.2s"/>
+        <circle cx="200" cy="350" r="2" class="tw" style="animation-delay:-0.3s"/>
+        <circle cx="1550" cy="500" r="2" class="tw" style="animation-delay:-1.7s"/>
+      </g>
+    </svg>
+
+
+    <div class="night-overlay"></div>
+    <div class="weather rain" id="rainLayer"></div>
+    <div class="weather snow" id="snowLayer"></div>
+  </div>
+
+
+<!-- Info Panel -->
+  <div class="backdrop" id="backdrop"></div>
+  <div class="info-panel" id="infoPanel">
+    <button class="close" id="closePanel" aria-label="Close">×</button>
+    <div class="tag" id="panelTag">Type</div>
+    <h2 id="panelTitle">Place name</h2>
+    <p id="panelDesc">Description goes here.</p>
+    <div class="meta" id="panelMeta">Click any building on the map to explore.</div>
+  </div>
+
+
+<script>
+const body = document.body;
+const themeBtn = document.getElementById('themeBtn');
+themeBtn.addEventListener('click', () => {
+const next = body.dataset.theme === 'dark' ? 'light' : 'dark';
+body.dataset.theme = next;
+themeBtn.classList.toggle('active', next === 'dark');
+});
+
+
+const rainLayer = document.getElementById('rainLayer');
+const rainBtn = document.getElementById('rainBtn');
+const snowBtn = document.getElementById('snowBtn');
+const snowLayer = document.getElementById('snowLayer');
+
+
+for (let i = 0; i < 120; i++) {
+const d = document.createElement('span');
+d.style.left = Math.random() * 100 + '%';
+d.style.animationDuration = (0.5 + Math.random() * 0.5) + 's';
+d.style.animationDelay = (Math.random() * 2) + 's';
+d.style.opacity = 0.4 + Math.random() * 0.5;
+rainLayer.appendChild(d);
+}
+for (let i = 0; i < 80; i++) {
+const f = document.createElement('span');
+f.style.left = Math.random() * 100 + '%';
+f.style.animationDuration = (4 + Math.random() * 4) + 's';
+f.style.animationDelay = (Math.random() * 5) + 's';
+f.style.width = f.style.height = (4 + Math.random() * 5) + 'px';
+f.style.opacity = 0.5 + Math.random() * 0.5;
+snowLayer.appendChild(f);
+}
+
+
+rainBtn.addEventListener('click', () => {
+const on = rainLayer.classList.toggle('on');
+rainBtn.classList.toggle('active', on);
+if (on) { snowLayer.classList.remove('on'); snowBtn.classList.remove('active'); }
+});
+snowBtn.addEventListener('click', () => {
+const on = snowLayer.classList.toggle('on');
+snowBtn.classList.toggle('active', on);
+if (on) { rainLayer.classList.remove('on'); rainBtn.classList.remove('active'); }
+});
+
+
+document.querySelector('.voice').addEventListener('click', function () {
+this.style.background = '#e8392f';
+setTimeout(() => { this.style.background = ''; }, 600);
+});
+
+
+/* ===== Clickable buildings ===== */
+const panel = document.getElementById('infoPanel');
+const backdrop = document.getElementById('backdrop');
+const closeBtn = document.getElementById('closePanel');
+const panelTag = document.getElementById('panelTag');
+const panelTitle = document.getElementById('panelTitle');
+const panelDesc = document.getElementById('panelDesc');
+const panelMeta = document.getElementById('panelMeta');
+
+
+function openPanel(el) {
+panelTag.textContent = el.dataset.type || 'Place';
+panelTitle.textContent = el.dataset.name || 'Unknown';
+panelDesc.textContent = el.dataset.desc || '';
+panelMeta.textContent = 'Click another building or press Esc to close';
+panel.classList.add('open');
+backdrop.classList.add('show');
+}
+
+
+function closePanel() {
+panel.classList.remove('open');
+backdrop.classList.remove('show');
+}
+
+
+document.querySelectorAll('.building').forEach(b => {
+b.addEventListener('click', (e) => {
+e.stopPropagation();
+openPanel(b);
+  });
+});
+
+
+closeBtn.addEventListener('click', closePanel);
+backdrop.addEventListener('click', closePanel);
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape') closePanel();
+});
+
+
+/* ===== Search ===== */
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+const q = searchInput.value.trim().toLowerCase();
+document.querySelectorAll('.building').forEach(b => {
+const name = (b.dataset.name || '').toLowerCase();
+const type = (b.dataset.type || '').toLowerCase();
+const id = (b.dataset.id || '').toLowerCase();
+const match = !q || name.includes(q) || type.includes(q) || id.includes(q);
+b.classList.toggle('highlight', match && q.length > 0);
+b.style.opacity = match ? '1' : '0.35';
+  });
+});
+searchInput.addEventListener('keydown', (e) => {
+if (e.key === 'Enter') {
+const first = document.querySelector('.building.highlight');
+if (first) openPanel(first);
+  }
+});
+</script>
+</body>
+</html>

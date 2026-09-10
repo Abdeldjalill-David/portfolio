@@ -1,0 +1,18 @@
+<svg viewBox="490 430 210 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1a2233" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <g filter="url(#soft)" transform="translate(30,110)">
+    <polygon points="580,510 670,555 600,590 510,545" fill="#1a2233" opacity="0.14"/>
+    <polygon points="510,525 600,570 600,510 510,465" fill="#5a3f2c"/>
+    <polygon points="670,535 600,570 600,510 670,485" fill="#7a5538"/>
+    <polygon points="580,430 670,475 600,510 510,465" fill="#8a6a45"/>
+    <polygon points="500,470 600,520 620,510 520,460" fill="#c94a3a"/>
+    <rect x="540" y="495" width="50" height="14" rx="2" fill="#f5e2c0"/>
+    <text x="565" y="506" font-family="Georgia, serif" font-size="9" fill="#5a3a20" text-anchor="middle">COFFEE</text>
+    <ellipse cx="565" cy="525" rx="6" ry="3" fill="#ffffff"/>
+    <rect x="559" y="517" width="12" height="8" rx="2" fill="#ffffff"/>
+  </g>
+</svg>
